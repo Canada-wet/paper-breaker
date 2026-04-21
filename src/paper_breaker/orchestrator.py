@@ -26,14 +26,14 @@ from .memory import format_user_context_prompt, load_user_context
 _ONBOARDING = (Path(__file__).parent / "prompts" / "onboarding.md").read_text()
 
 
-def build_orchestrator() -> RequirementAgent:
+def build_orchestrator(extra_tools: list | None = None) -> RequirementAgent:
     settings = load_settings()
     ctx = load_user_context()
 
-    search = build_search_agent()
-    analysis = build_analysis_agent()
-    notif = build_notification_agent()
-    db = build_database_agent()
+    search = build_search_agent(extra_tools=extra_tools)
+    analysis = build_analysis_agent(extra_tools=extra_tools)
+    notif = build_notification_agent(extra_tools=extra_tools)
+    db = build_database_agent(extra_tools=extra_tools)
 
     needs_onboarding = not (ctx.work_context and ctx.role)
 

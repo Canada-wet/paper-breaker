@@ -221,5 +221,8 @@ pnpm-debug.log*
 !web/lib/
 !web/lib/**
 
+# Local MCP server config (may contain secrets in env blocks). Commit only the .example.
+mcp_servers.json
+
 # macOS
 .DS_Store

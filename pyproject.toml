@@ -32,6 +32,9 @@ dependencies = [
     "pypdf>=4.3",
     "sentence-transformers>=3.0",
 
+    # MCP — server + client bindings
+    "mcp>=1.0",
+
     # Plumbing
     "python-dotenv>=1.0",
     "pydantic>=2.8",
@@ -50,6 +53,7 @@ dev = [
 [project.scripts]
 paper-breaker = "paper_breaker.cli:app"
 paper-breaker-server = "paper_breaker.server:run"
+paper-breaker-mcp = "paper_breaker.mcp_server:run"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/paper_breaker"]

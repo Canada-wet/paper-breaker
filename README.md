@@ -89,6 +89,49 @@ pnpm dev
 # open http://localhost:3000
 ```
 
+## MCP integration
+
+The scaffold has **two** MCP surfaces:
+
+### a) Expose paper-breaker tools to any MCP client (Claude Code, Cursor, etc.)
+
+`paper-breaker-mcp` is a FastMCP stdio server that publishes every core tool
+(arxiv_search, semantic_scholar_search, pdf_fetch, embed, upsert_paper,
+match_paper_by_embedding, log_interaction, load_user_context, …). Wire it into
+Claude Code by committing `.mcp.json` (already included):
+
+```jsonc
+// .mcp.json
+{
+  "mcpServers": {
+    "paper-breaker": { "command": "paper-breaker-mcp", "args": [], "env": {} }
+  }
+}
+```
+
+Then in Claude Code, call tools like `paper-breaker__arxiv_search`
+directly — no A2A server needed. Because these tools use the Supabase
+service-role key, **run the MCP server only on trusted machines**.
+
+### b) Plug external MCP servers in as tools for the agents
+
+Copy `mcp_servers.example.json` → `mcp_servers.json` and list servers:
+
+```json
+[
+  { "name": "filesystem",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+    "include": ["read_file", "list_directory"] },
+  { "name": "fetch", "command": "uvx", "args": ["mcp-server-fetch"] }
+]
+```
+
+`paper-breaker-server` loads these once at startup via
+`mcp_clients.load_external_mcp_tools()` and passes them to every agent as
+`extra_tools`. `mcp_servers.json` is gitignored — the `.example` file is the
+source of truth you commit.
+
 ## Repo layout
 
 ```
@@ -99,9 +142,13 @@ paper-breaker/
 ├── supabase/
 │   ├── migrations/       0001_init.sql  0002_cron.sql
 │   └── functions/daily_trigger/index.ts
+├── .mcp.json             Claude Code integration for the paper-breaker MCP server
+├── mcp_servers.example.json  External MCPs to mount as agent tools (copy to mcp_servers.json)
 ├── src/paper_breaker/
 │   ├── config.py
 │   ├── server.py         orchestrator.py  cli.py
+│   ├── mcp_server.py     FastMCP server — paper-breaker tools over stdio
+│   ├── mcp_clients.py    External MCP loader — agents consume other MCP servers
 │   ├── agents/           search.py  analysis.py  notification.py  database.py
 │   ├── tools/            arxiv_tool.py  semantic_scholar_tool.py  pdf_fetch_tool.py
 │   │                     embedding_tool.py  supabase_tool.py

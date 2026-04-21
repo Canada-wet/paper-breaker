@@ -15,7 +15,7 @@ from .database import (
 )
 
 
-def build_search_agent() -> RequirementAgent:
+def build_search_agent(extra_tools: list | None = None) -> RequirementAgent:
     settings = load_settings()
     ctx = load_user_context()
     system = f"""You are **PaperBreaker/Search**, a retrieval agent that finds AI papers
@@ -34,17 +34,20 @@ for Henry. For each query:
 
 Never invent arxiv_ids. Never upsert a paper without a title.
 """
+    tools = [
+        ThinkTool(),
+        ArxivSearchTool(),
+        SemanticScholarSearchTool(),
+        EmbeddingTool(),
+        UpsertPaperTool(),
+        UpsertVectorTool(),
+        MatchPaperTool(),
+    ]
+    if extra_tools:
+        tools.extend(extra_tools)
     return RequirementAgent(
         llm=ChatModel.from_name(settings.llm_model_id),
-        tools=[
-            ThinkTool(),
-            ArxivSearchTool(),
-            SemanticScholarSearchTool(),
-            EmbeddingTool(),
-            UpsertPaperTool(),
-            UpsertVectorTool(),
-            MatchPaperTool(),
-        ],
+        tools=tools,
         role="SearchAgent",
         instructions=system,
     )

@@ -16,19 +16,22 @@ from .database import UpsertAnalysisTool, UpsertVectorTool
 _ANALYSIS_SYS = (Path(__file__).parent.parent / "prompts" / "analysis_system.md").read_text()
 
 
-def build_analysis_agent() -> RequirementAgent:
+def build_analysis_agent(extra_tools: list | None = None) -> RequirementAgent:
     settings = load_settings()
     ctx = load_user_context()
     system = f"{_ANALYSIS_SYS}\n\n{format_user_context_prompt(ctx)}"
+    tools = [
+        ThinkTool(),
+        PdfFetchTool(),
+        EmbeddingTool(),
+        UpsertAnalysisTool(),
+        UpsertVectorTool(),
+    ]
+    if extra_tools:
+        tools.extend(extra_tools)
     return RequirementAgent(
         llm=ChatModel.from_name(settings.llm_model_id),
-        tools=[
-            ThinkTool(),
-            PdfFetchTool(),
-            EmbeddingTool(),
-            UpsertAnalysisTool(),
-            UpsertVectorTool(),
-        ],
+        tools=tools,
         role="AnalysisAgent",
         instructions=system,
     )

@@ -16,6 +16,7 @@ from .agents import (
     build_search_agent,
 )
 from .config import load_settings
+from .mcp_clients import load_external_mcp_tools
 from .orchestrator import build_orchestrator
 
 server = Server()
@@ -30,35 +31,40 @@ async def _delegate(agent, input: Message):
 @server.agent()
 async def orchestrator(input: Message, context: RunContext):
     """Main user-facing entry point. Use this for conversational requests."""
-    agent = build_orchestrator()
+    extra = await load_external_mcp_tools()
+    agent = build_orchestrator(extra_tools=extra)
     yield AgentMessage(text=await _delegate(agent, input))
 
 
 @server.agent()
 async def search(input: Message, context: RunContext):
     """Direct access to the SearchAgent (pulls papers from arXiv + S2)."""
-    agent = build_search_agent()
+    extra = await load_external_mcp_tools()
+    agent = build_search_agent(extra_tools=extra)
     yield AgentMessage(text=await _delegate(agent, input))
 
 
 @server.agent()
 async def analysis(input: Message, context: RunContext):
     """Direct access to the AnalysisAgent (breaks a single paper down)."""
-    agent = build_analysis_agent()
+    extra = await load_external_mcp_tools()
+    agent = build_analysis_agent(extra_tools=extra)
     yield AgentMessage(text=await _delegate(agent, input))
 
 
 @server.agent()
 async def notification(input: Message, context: RunContext):
     """Direct access to the NotificationAgent (daily digest). Called by pg_cron."""
-    agent = build_notification_agent()
+    extra = await load_external_mcp_tools()
+    agent = build_notification_agent(extra_tools=extra)
     yield AgentMessage(text=await _delegate(agent, input))
 
 
 @server.agent()
 async def database(input: Message, context: RunContext):
     """Direct access to the DatabaseAgent (logging interactions, profile updates)."""
-    agent = build_database_agent()
+    extra = await load_external_mcp_tools()
+    agent = build_database_agent(extra_tools=extra)
     yield AgentMessage(text=await _delegate(agent, input))
 
 

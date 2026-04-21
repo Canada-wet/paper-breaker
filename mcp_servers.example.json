@@ -1,0 +1,13 @@
+[
+  {
+    "name": "filesystem",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+    "include": ["read_file", "list_directory"]
+  },
+  {
+    "name": "fetch",
+    "command": "uvx",
+    "args": ["mcp-server-fetch"]
+  }
+]

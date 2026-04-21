@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "paper-breaker": {
+      "command": "paper-breaker-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}

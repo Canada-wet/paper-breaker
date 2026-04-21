@@ -141,11 +141,14 @@ def db_tools() -> list[Tool]:
     ]
 
 
-def build_database_agent() -> RequirementAgent:
+def build_database_agent(extra_tools: list | None = None) -> RequirementAgent:
     settings = load_settings()
+    tools = db_tools()
+    if extra_tools:
+        tools.extend(extra_tools)
     return RequirementAgent(
         llm=ChatModel.from_name(settings.llm_cheap_model_id),
-        tools=db_tools(),
+        tools=tools,
         role="DatabaseAgent",
         instructions=(
             "You persist and retrieve state for the paper-breaker system. "

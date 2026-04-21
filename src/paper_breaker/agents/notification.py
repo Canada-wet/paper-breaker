@@ -14,12 +14,12 @@ from .database import MatchPaperTool, UpsertDigestTool
 from .search import build_search_agent
 
 
-def build_notification_agent() -> RequirementAgent:
+def build_notification_agent(extra_tools: list | None = None) -> RequirementAgent:
     settings = load_settings()
     ctx = load_user_context()
     today = date.today().isoformat()
 
-    search_agent = build_search_agent()
+    search_agent = build_search_agent(extra_tools=extra_tools)
 
     system = f"""You are **PaperBreaker/Notification**. You run on a daily cron.
 
@@ -38,14 +38,17 @@ Steps for today ({today}):
 
 Keep handoffs tight — one SearchAgent call per topic, not one per paper.
 """
+    tools = [
+        ThinkTool(),
+        HandoffTool(search_agent, name="DelegateToSearch"),
+        MatchPaperTool(),
+        UpsertDigestTool(),
+    ]
+    if extra_tools:
+        tools.extend(extra_tools)
     return RequirementAgent(
         llm=ChatModel.from_name(settings.llm_model_id),
-        tools=[
-            ThinkTool(),
-            HandoffTool(search_agent, name="DelegateToSearch"),
-            MatchPaperTool(),
-            UpsertDigestTool(),
-        ],
+        tools=tools,
         role="NotificationAgent",
         instructions=system,
     )
