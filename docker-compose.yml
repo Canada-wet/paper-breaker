@@ -1,0 +1,15 @@
+# Local dev stack. `docker compose up agent` brings up the BeeAI A2A server.
+# Supabase runs as a hosted service in this setup — swap in supabase/cli's
+# local stack later if you want fully offline dev.
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "8333:8333"
+    volumes:
+      - ./src:/app/src:ro
+    command: ["paper-breaker-server"]
