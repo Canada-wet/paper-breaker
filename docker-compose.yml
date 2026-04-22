@@ -8,6 +8,11 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file: .env
+    environment:
+      # Inside the container uvicorn must listen on all interfaces, otherwise
+      # the 8333:8333 port publish can't reach it. HOST in .env defaults to
+      # 127.0.0.1 for local dev on the host — override it here.
+      HOST: "0.0.0.0"
     ports:
       - "8333:8333"
     volumes:
