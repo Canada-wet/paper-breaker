@@ -17,7 +17,7 @@ from .agents import (
 )
 from .config import load_settings
 from .mcp_clients import load_external_mcp_tools
-from .orchestrator import build_orchestrator
+from .orchestrator import build_orchestrator_graph
 
 server = Server()
 
@@ -30,10 +30,13 @@ async def _delegate(agent, input: Message):
 
 @server.agent()
 async def orchestrator(input: Message, context: RunContext):
-    """Main user-facing entry point. Use this for conversational requests."""
+    """Main user-facing entry point. LangGraph state machine routes intents."""
     extra = await load_external_mcp_tools()
-    agent = build_orchestrator(extra_tools=extra)
-    yield AgentMessage(text=await _delegate(agent, input))
+    graph = build_orchestrator_graph()
+    result = await graph.ainvoke(
+        {"input": get_message_text(input), "extra_tools": extra}
+    )
+    yield AgentMessage(text=result.get("response", ""))
 
 
 @server.agent()

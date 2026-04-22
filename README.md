@@ -6,13 +6,19 @@ Supabase (Postgres + pgvector + Realtime); the landing page is a small Next.js a
 
 ## Agents
 
-- **Orchestrator** — routes messages to specialists; handles first-run onboarding.
-- **SearchAgent** — pulls papers from arXiv + Semantic Scholar, embeds + dedupes.
-- **AnalysisAgent** — breaks one paper into sections + a tailored "how this applies to you".
-- **NotificationAgent** — daily cron target that writes today's `daily_digests` row.
+- **Orchestrator** — **LangGraph StateGraph** that routes messages to specialists and
+  handles first-run onboarding. Nodes: `route → {onboard|search|analyze|notify|db|chat} → END`.
+  Haiku picks the intent; each branch calls the matching BeeAI specialist.
+- **SearchAgent** — BeeAI `RequirementAgent`; pulls papers from arXiv + Semantic Scholar, embeds + dedupes.
+- **AnalysisAgent** — BeeAI `RequirementAgent`; breaks one paper into sections + a tailored "how this applies to you".
+- **NotificationAgent** — BeeAI `RequirementAgent`; daily cron target that writes today's `daily_digests` row.
 - **DatabaseAgent** — thin BeeAI wrapper over the Supabase service-role client.
 
 All five are exposed over HTTP as A2A services by `agentstack-sdk` in `src/paper_breaker/server.py`.
+The orchestrator is the one node that benefits from an explicit state machine
+(deterministic routing, easy to add human-in-the-loop interrupts later); the
+specialists are tool-using ReAct-style agents where BeeAI's built-ins are a
+cleaner fit. The A2A boundary is the seam — each endpoint can evolve independently.
 
 ## One-time setup
 

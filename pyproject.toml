@@ -35,6 +35,11 @@ dependencies = [
     # MCP — server + client bindings
     "mcp>=1.0",
 
+    # LangGraph — explicit state machine for the orchestrator only.
+    # Specialist agents stay on BeeAI; LangGraph gives us deterministic routing,
+    # easy inspection, and a hook for human-in-the-loop interrupts later.
+    "langgraph>=0.2,<0.6",
+
     # Plumbing
     "python-dotenv>=1.0",
     "pydantic>=2.8",
