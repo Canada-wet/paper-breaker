@@ -1,4 +1,12 @@
-"""Agent Stack A2A server — exposes each specialist + the orchestrator as an endpoint."""
+"""Agent Stack A2A server — single orchestrator endpoint.
+
+Starting with agentstack-sdk 0.7.x a `Server()` hosts exactly one agent. That's
+fine here: the LangGraph orchestrator already routes to every specialist
+(search / analysis / notification / database) internally. The specialists keep
+their builder functions (used directly by the CLI + the graph nodes) but do
+*not* get their own HTTP endpoints. If you ever need a specialist as a separate
+A2A service, spin up a second process with its own `Server()`.
+"""
 from __future__ import annotations
 
 import os
@@ -9,12 +17,6 @@ from agentstack_sdk.a2a.types import AgentMessage
 from agentstack_sdk.server import Server
 from agentstack_sdk.server.context import RunContext
 
-from .agents import (
-    build_analysis_agent,
-    build_database_agent,
-    build_notification_agent,
-    build_search_agent,
-)
 from .config import load_settings
 from .mcp_clients import load_external_mcp_tools
 from .orchestrator import build_orchestrator_graph
@@ -22,53 +24,18 @@ from .orchestrator import build_orchestrator_graph
 server = Server()
 
 
-async def _delegate(agent, input: Message):
-    text = get_message_text(input)
-    response = await agent.run(text)
-    return response.last_message.text
-
-
 @server.agent()
 async def orchestrator(input: Message, context: RunContext):
-    """Main user-facing entry point. LangGraph state machine routes intents."""
+    """PaperBreaker entry point. LangGraph state machine routes every intent:
+    search papers, analyze a paper, run today's digest, log an interaction,
+    or just chat. Onboarding is triggered automatically when the profile is empty.
+    """
     extra = await load_external_mcp_tools()
     graph = build_orchestrator_graph()
     result = await graph.ainvoke(
         {"input": get_message_text(input), "extra_tools": extra}
     )
     yield AgentMessage(text=result.get("response", ""))
-
-
-@server.agent()
-async def search(input: Message, context: RunContext):
-    """Direct access to the SearchAgent (pulls papers from arXiv + S2)."""
-    extra = await load_external_mcp_tools()
-    agent = build_search_agent(extra_tools=extra)
-    yield AgentMessage(text=await _delegate(agent, input))
-
-
-@server.agent()
-async def analysis(input: Message, context: RunContext):
-    """Direct access to the AnalysisAgent (breaks a single paper down)."""
-    extra = await load_external_mcp_tools()
-    agent = build_analysis_agent(extra_tools=extra)
-    yield AgentMessage(text=await _delegate(agent, input))
-
-
-@server.agent()
-async def notification(input: Message, context: RunContext):
-    """Direct access to the NotificationAgent (daily digest). Called by pg_cron."""
-    extra = await load_external_mcp_tools()
-    agent = build_notification_agent(extra_tools=extra)
-    yield AgentMessage(text=await _delegate(agent, input))
-
-
-@server.agent()
-async def database(input: Message, context: RunContext):
-    """Direct access to the DatabaseAgent (logging interactions, profile updates)."""
-    extra = await load_external_mcp_tools()
-    agent = build_database_agent(extra_tools=extra)
-    yield AgentMessage(text=await _delegate(agent, input))
 
 
 def run() -> None:

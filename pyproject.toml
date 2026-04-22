@@ -13,8 +13,10 @@ authors = [{ name = "Henry Wu" }]
 
 dependencies = [
     # BeeAI — A2A framework. Alpha Python SDK; pinned minor to avoid surprise breaks.
-    "beeai-framework>=0.1,<0.3",
-    "agentstack-sdk>=0.1,<0.3",
+    # beeai-framework is still on the 0.1.x series; agentstack-sdk has already
+    # cut a 0.7.x — pin accordingly.
+    "beeai-framework>=0.1,<0.2",
+    "agentstack-sdk>=0.7,<0.8",
 
     # LLM providers (BeeAI ChatModel routes through these)
     "anthropic>=0.40",

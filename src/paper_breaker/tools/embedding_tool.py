@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from beeai_framework.tools import Tool
+from ._base import Tool
 
 from ..config import load_settings
 

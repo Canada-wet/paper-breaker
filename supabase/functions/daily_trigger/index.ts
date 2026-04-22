@@ -21,7 +21,9 @@ Deno.serve(async (_req) => {
     });
   }
 
-  const resp = await fetch(`${AGENT_URL}/agents/notification/run`, {
+  // The agent server hosts a single orchestrator endpoint that routes
+  // internally to the notification flow when it sees "digest" intent.
+  const resp = await fetch(`${AGENT_URL}/agents/orchestrator/run`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -30,7 +32,9 @@ Deno.serve(async (_req) => {
     body: JSON.stringify({
       message: {
         role: "user",
-        parts: [{ kind: "text", text: "Run today's digest." }],
+        parts: [
+          { kind: "text", text: "Run today's daily digest for the default user." },
+        ],
       },
     }),
   });

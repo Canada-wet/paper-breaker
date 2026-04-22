@@ -14,11 +14,18 @@ Supabase (Postgres + pgvector + Realtime); the landing page is a small Next.js a
 - **NotificationAgent** — BeeAI `RequirementAgent`; daily cron target that writes today's `daily_digests` row.
 - **DatabaseAgent** — thin BeeAI wrapper over the Supabase service-role client.
 
-All five are exposed over HTTP as A2A services by `agentstack-sdk` in `src/paper_breaker/server.py`.
+Only the **orchestrator** is exposed over HTTP as an A2A service (at
+`/agents/orchestrator/run`) — agentstack-sdk `Server` is one-agent-per-process
+by design. The specialists live inside the LangGraph as nodes; they're reached
+by intent routing, not separate endpoints. The CLI calls the specialist
+builders directly when you need to exercise one in isolation
+(`paper-breaker search|analyze|digest`). If you ever want a specialist exposed
+as its own A2A service, spin up a second process with its own `Server()`.
+
 The orchestrator is the one node that benefits from an explicit state machine
 (deterministic routing, easy to add human-in-the-loop interrupts later); the
 specialists are tool-using ReAct-style agents where BeeAI's built-ins are a
-cleaner fit. The A2A boundary is the seam — each endpoint can evolve independently.
+cleaner fit.
 
 ## One-time setup
 

@@ -12,7 +12,6 @@ export function InteractionButtons({ paperId }: { paperId: string }) {
     setState("saving");
     try {
       await callAgent(
-        "database",
         `log_interaction for paper_id=${paperId} type=${kind}`,
       );
       setState(kind);

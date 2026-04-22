@@ -8,7 +8,7 @@ import httpx
 from pydantic import BaseModel, Field
 from pypdf import PdfReader
 
-from beeai_framework.tools import Tool
+from ._base import Tool
 
 
 class PdfFetchInput(BaseModel):

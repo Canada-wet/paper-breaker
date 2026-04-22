@@ -11,10 +11,10 @@ from pydantic import BaseModel, Field
 
 from beeai_framework.agents.requirement import RequirementAgent
 from beeai_framework.backend import ChatModel
-from beeai_framework.tools import Tool
 
 from ..config import load_settings
 from ..tools import supabase_tool as st
+from ..tools._base import Tool
 
 
 # -----------------------------------------------------------------------

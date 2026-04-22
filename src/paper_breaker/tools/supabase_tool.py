@@ -163,7 +163,8 @@ def recent_interactions(user_id: str, limit: int = 20) -> list[dict]:
 # -----------------------------------------------------------------------
 
 from pydantic import BaseModel, Field
-from beeai_framework.tools import Tool
+
+from ._base import Tool
 
 
 class _UpsertPaperInput(BaseModel):

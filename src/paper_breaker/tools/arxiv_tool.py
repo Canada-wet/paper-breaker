@@ -7,7 +7,7 @@ from typing import Any
 import arxiv
 from pydantic import BaseModel, Field
 
-from beeai_framework.tools import Tool
+from ._base import Tool
 
 
 class ArxivSearchInput(BaseModel):
